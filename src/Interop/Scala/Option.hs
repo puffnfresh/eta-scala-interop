@@ -14,8 +14,10 @@ module Interop.Scala.Option
   , optionToMaybe
   , Some(..)
   , some
+  , some_
   , None(..)
   , none
+  , none_
   )
 where
 
@@ -63,6 +65,10 @@ foreign import java unsafe "@new" some
 foreign import java unsafe "value" someValue
   :: (a <: Object) => Java (Some a) a
 
+some_ :: (a <: Object) => a -> Option a
+some_ =
+  superCast . some
+
 data None = None @scala.None$
   deriving (Class, Show, Eq)
 
@@ -70,3 +76,7 @@ foreign import java unsafe "@static @field scala.None$.MODULE$" none
   :: None
 
 instance {-# OVERLAPPING #-} (Class a) => Extends None (Option a)
+
+none_ :: (Class a) => Option a
+none_ =
+  superCast none
