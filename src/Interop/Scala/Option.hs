@@ -6,7 +6,17 @@
 {-# LANGUAGE DataKinds #-}
 
 module Interop.Scala.Option
-  (Option(..), mapOption, foldOption, option, Some(..), some, None(..), none)
+  ( Option(..)
+  , mapOption
+  , foldOption
+  , option
+  , optionFromMaybe
+  , optionToMaybe
+  , Some(..)
+  , some
+  , None(..)
+  , none
+  )
 where
 
 import Data.Maybe (maybe)
@@ -31,6 +41,14 @@ foreign import java unsafe "fold" foldOption
 option :: (a <: Object) => b -> (a -> b) -> Option a -> b
 option b f o =
   maybe b (f . flip unsafePerformJavaWith someValue) (safeDowncast o)
+
+optionFromMaybe :: (a <: Object) => Maybe a -> Option a
+optionFromMaybe =
+  maybe (superCast none) (superCast . some)
+
+optionToMaybe :: (a <: Object) => Option a -> Maybe a
+optionToMaybe =
+  option Nothing Just
 
 data Some a = Some (@scala.Some a)
   deriving (Class, Show, Eq)

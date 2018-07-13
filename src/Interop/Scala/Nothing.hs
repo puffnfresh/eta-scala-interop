@@ -10,7 +10,7 @@ import GHC.Base
 import GHC.Show
 import Java
 
-data Nothing = Nothing @scala.Nothing$
+data Nothing = Nothing' @scala.Nothing$
   deriving (Class, Show, Eq)
 
 instance {-# OVERLAPPING #-} (Class a) => Extends Nothing a where
