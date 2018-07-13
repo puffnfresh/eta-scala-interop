@@ -2,15 +2,19 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE DataKinds #-}
 
 module Interop.Scala.Option
-  (Option(..), Some(..), some, None(..), none)
+  (Option(..), mapOption, foldOption, option, Some(..), some, None(..), none)
 where
 
+import Data.Maybe (maybe)
 import GHC.Base hiding (some)
 import GHC.Show
 import Java
 
+import Interop.Scala.Function
 import Interop.Scala.Nothing
 
 data Option a = Option (@scala.Option a)
@@ -18,15 +22,28 @@ data Option a = Option (@scala.Option a)
 
 instance {-# OVERLAPPING #-} (a <: b) => Extends (Option a) (Option b)
 
+foreign import java unsafe "map" mapOption
+  :: Function1 a b -> Java (Option a) (Option b)
+
+foreign import java unsafe "fold" foldOption
+  :: (b <: Object) => Function0 b -> Function1 a b -> Java (Option a) b
+
+option :: (a <: Object) => b -> (a -> b) -> Option a -> b
+option b f o =
+  maybe b (f . flip unsafePerformJavaWith someValue) (safeDowncast o)
+
 data Some a = Some (@scala.Some a)
   deriving (Class, Show, Eq)
 
-instance {-# OVERLAPPING #-} (a <: b) => Extends (Some a) (Some b)
+type instance Inherits (Some a) = '[Option a]
 
-instance {-# OVERLAPPING #-} (a <: b) => Extends (Some a) (Option b)
+instance {-# OVERLAPPING #-} (a <: b) => Extends (Some a) (Some b)
 
 foreign import java unsafe "@new" some
   :: (a <: Object) => a -> Some a
+
+foreign import java unsafe "value" someValue
+  :: (a <: Object) => Java (Some a) a
 
 data None = None @scala.None$
   deriving (Class, Show, Eq)

@@ -19,6 +19,7 @@ module Interop.Scala
   (module X)
 where
 
+import Interop.Scala.Function as X
 import Interop.Scala.Nothing as X
 import Interop.Scala.Option as X
 import Interop.Scala.Tuple as X
